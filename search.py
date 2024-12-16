@@ -318,9 +318,13 @@ def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directi
     return actions
 
 def geneticAlgorithm(problema: SearchProblem):
-    tamanho_populacao = 200
     geracoes = 10
     taxa_mutacao = 0.5
+    tamanho_populacao = 100
+    solucao = None
+    custo_global = float('inf')
+    taxa_convergencia = int(geracoes/3)
+    geracoes_sem_ganho = 0
 
     def obterIndiceAleatorio(tamanho_maximo):
         return random.randint(0, tamanho_maximo - 1)
@@ -388,8 +392,16 @@ def geneticAlgorithm(problema: SearchProblem):
         populacao = sorted(populacao, key=lambda x: avaliar(x))
 
         melhorCromossomo = populacao[0]
-        if avaliar(melhorCromossomo) < float('inf'):
-            return melhorCromossomo
+        custo_local = avaliar(melhorCromossomo)
+        if custo_local < custo_global:
+            solucao = melhorCromossomo
+            custo_global = custo_local
+            geracoes_sem_ganho = 0
+        else:
+            geracoes_sem_ganho += 1
+
+        if (geracoes_sem_ganho >= taxa_convergencia):
+            return solucao
 
         selecionados = populacao[:tamanho_populacao // 2]
         filhos = []
