@@ -317,11 +317,12 @@ def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directi
 
     return actions
 
+# Execute com o comando python3 pacman.py -l mediumMaze -p SearchAgent -a fn=ga   
 def geneticAlgorithm(problema: SearchProblem):
     # Parâmetros do algoritmo
-    geracoes = 5  # Número máximo de gerações
+    geracoes = 10  # Número máximo de gerações
     taxa_mutacao = 0.2  # Probabilidade de ocorrer mutação em um cromossomo
-    tamanho_populacao = 80  # Quantidade de indivíduos na população
+    tamanho_populacao = 100  # Quantidade de indivíduos na população
     solucao = None  # Melhor solução encontrada
     custo_global = float('inf')  # Custo da melhor solução
     taxa_convergencia = int(geracoes / 3)  # Número de gerações sem melhoria para convergência
