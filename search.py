@@ -318,61 +318,71 @@ def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directi
     return actions
 
 def geneticAlgorithm(problema: SearchProblem):
-    geracoes = 10
-    taxa_mutacao = 0.5
-    tamanho_populacao = 100
-    solucao = None
-    custo_global = float('inf')
-    taxa_convergencia = int(geracoes/3)
-    geracoes_sem_ganho = 0
+    # Parâmetros do algoritmo
+    geracoes = 10  # Número máximo de gerações
+    taxa_mutacao = 0.5  # Probabilidade de ocorrer mutação em um cromossomo
+    tamanho_populacao = 100  # Quantidade de indivíduos na população
+    solucao = None  # Melhor solução encontrada
+    custo_global = float('inf')  # Custo da melhor solução
+    taxa_convergencia = int(geracoes / 3)  # Número de gerações sem melhoria para convergência
+    geracoes_sem_ganho = 0  # Contador de gerações sem melhoria
 
+    # Função auxiliar para obter um índice aleatório
     def obterIndiceAleatorio(tamanho_maximo):
         return random.randint(0, tamanho_maximo - 1)
 
+    # Gera um cromossomo aleatório, que é uma sequência de ações
     def gerarCromossomoAleatorio():
-        cromossomo = []
-        estadosExplorados = []
-
-        estadoAtual = problema.getStartState()
+        cromossomo = []  # Representação do cromossomo
+        estadosExplorados = []  # Estados já visitados para evitar loops
+        estadoAtual = problema.getStartState()  # Estado inicial do problema
         estadosExplorados.append(estadoAtual)
 
-        for _ in range(150):
-            sucessores = problema.getSuccessors(estadoAtual)
+        # Gera uma sequência de ações aleatórias até atingir um limite
+        for _ in range(150):  # Limite de 150 ações
+            sucessores = problema.getSuccessors(estadoAtual)  # Sucessores do estado atual
+            # Seleciona um sucessor aleatório que ainda não foi explorado
             estadoSucessor, acaoSucessor, custoSucessor = sucessores[obterIndiceAleatorio(len(sucessores))]
             if estadoSucessor not in estadosExplorados:
-                cromossomo.append(acaoSucessor)
-                estadoAtual = estadoSucessor
-                estadosExplorados.append(estadoSucessor)
+                cromossomo.append(acaoSucessor)  # Adiciona a ação ao cromossomo
+                estadoAtual = estadoSucessor  # Atualiza o estado atual
+                estadosExplorados.append(estadoSucessor)  # Marca o estado como explorado
 
         return cromossomo
 
+    # Avalia o custo de um cromossomo
     def avaliar(cromossomo):
-        estado = problema.getStartState()
-        custo = 0
+        estado = problema.getStartState()  # Começa do estado inicial
+        custo = 0  # Custo acumulado
 
+        # Percorre as ações no cromossomo
         for acao in cromossomo:
-            sucessores = problema.getSuccessors(estado)
-            acoesValidas = {s[1]: (s[0], s[2]) for s in sucessores}
+            sucessores = problema.getSuccessors(estado)  # Sucessores do estado atual
+            acoesValidas = {s[1]: (s[0], s[2]) for s in sucessores}  # Mapeia ações válidas para seus resultados
 
-            if acao not in acoesValidas:
+            if acao not in acoesValidas:  # Se a ação não é válida, retorna custo infinito
                 return float('inf')
 
-            estado, custoPasso = acoesValidas[acao]
+            estado, custoPasso = acoesValidas[acao]  # Atualiza o estado e acumula o custo
             custo += custoPasso
 
+        # Verifica se o estado final é o estado objetivo
         if not problema.isGoalState(estado):
             return float('inf')
 
         return custo
 
+    # Realiza o cruzamento entre dois pais para gerar um novo cromossomo (filho)
     def cruzamento(pai1, pai2):
-        pontoCorte = random.randint(1, min(len(pai1), len(pai2)) - 1)
-        return pai1[:pontoCorte] + pai2[pontoCorte:]
+        pontoCorte = random.randint(1, min(len(pai1), len(pai2)) - 1)  # Define um ponto de corte
+        return pai1[:pontoCorte] + pai2[pontoCorte:]  # Combina partes dos pais
 
+    # Aplica mutação em um cromossomo
     def mutacao(cromossomo):
         if cromossomo:
-            indiceMutacao = random.randint(0, len(cromossomo) - 1)
-            estado = problema.getStartState()
+            indiceMutacao = random.randint(0, len(cromossomo) - 1)  # Escolhe um índice para mutação
+            estado = problema.getStartState()  # Estado inicial
+            # Executa ações até o índice de mutação
             for acao in cromossomo[:indiceMutacao]:
                 sucessores = problema.getSuccessors(estado)
                 acoesValidas = {s[1]: s[0] for s in sucessores}
@@ -381,42 +391,52 @@ def geneticAlgorithm(problema: SearchProblem):
                 else:
                     return cromossomo
             
-            sucessores = problema.getSuccessors(estado)
-            if sucessores:
+            sucessores = problema.getSuccessors(estado)  # Obtém sucessores do estado atual
+            if sucessores:  # Seleciona uma nova ação aleatória
                 cromossomo[indiceMutacao] = random.choice(sucessores)[1]
         return cromossomo
 
+    # Inicializa a população com cromossomos aleatórios
     populacao = [gerarCromossomoAleatorio() for _ in range(tamanho_populacao)]
 
+    # Itera ao longo de um número fixo de gerações
     for _ in range(geracoes):
+        # Ordena a população com base nos custos dos cromossomos
         populacao = sorted(populacao, key=lambda x: avaliar(x))
 
+        # Obtém o melhor cromossomo da geração
         melhorCromossomo = populacao[0]
         custo_local = avaliar(melhorCromossomo)
-        if custo_local < custo_global:
+        if custo_local < custo_global:  # Atualiza a melhor solução encontrada
             solucao = melhorCromossomo
             custo_global = custo_local
-            geracoes_sem_ganho = 0
+            geracoes_sem_ganho = 0  # Reseta o contador de gerações sem ganho
         else:
-            geracoes_sem_ganho += 1
+            geracoes_sem_ganho += 1  # Incrementa o contador
 
-        if (geracoes_sem_ganho >= taxa_convergencia):
+        # Para o algoritmo se não houver melhoria por várias gerações
+        if geracoes_sem_ganho >= taxa_convergencia:
             return solucao
 
+        # Seleciona os melhores indivíduos (metade superior)
         selecionados = populacao[:tamanho_populacao // 2]
         filhos = []
 
+        # Realiza cruzamento até completar a nova população
         while len(filhos) < tamanho_populacao - len(selecionados):
-            pai1, pai2 = random.sample(selecionados, 2)
-            filho = cruzamento(pai1, pai2)
+            pai1, pai2 = random.sample(selecionados, 2)  # Seleciona dois pais aleatoriamente
+            filho = cruzamento(pai1, pai2)  # Gera um filho
             filhos.append(filho)
 
+        # Aplica mutação nos filhos
         for filho in filhos:
-            if random.random() < taxa_mutacao:
+            if random.random() < taxa_mutacao:  # Decide se ocorrerá mutação com base na taxa
                 mutacao(filho)
 
+        # Atualiza a população para a próxima geração
         populacao = selecionados + filhos
 
+    # Retorna o melhor cromossomo encontrado
     return min(populacao, key=lambda x: avaliar(x))
 
 
