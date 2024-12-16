@@ -319,9 +319,9 @@ def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directi
 
 def geneticAlgorithm(problema: SearchProblem):
     # Parâmetros do algoritmo
-    geracoes = 10  # Número máximo de gerações
-    taxa_mutacao = 0.5  # Probabilidade de ocorrer mutação em um cromossomo
-    tamanho_populacao = 100  # Quantidade de indivíduos na população
+    geracoes = 5  # Número máximo de gerações
+    taxa_mutacao = 0.2  # Probabilidade de ocorrer mutação em um cromossomo
+    tamanho_populacao = 80  # Quantidade de indivíduos na população
     solucao = None  # Melhor solução encontrada
     custo_global = float('inf')  # Custo da melhor solução
     taxa_convergencia = int(geracoes / 3)  # Número de gerações sem melhoria para convergência
